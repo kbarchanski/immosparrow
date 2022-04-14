@@ -18,14 +18,17 @@
         :style="autocompletePos"
       >
         <div 
-          v-for="sugestion of sugestions"
-          @click="submit(sugestion, $event)"
-          :key="sugestion.id"
+          v-for="suggestion of suggestions"
+          @click="submit(suggestion, $event)"
+          :key="suggestion.id || suggestion.name"
           class="autocomplete-item"
         >
-            <span v-text="sugestion.part1" />
-            <span v-text="sugestion.match" class="autocomplete-match"/>
-            <span v-text="sugestion.part2" />
+            <template v-if="suggestion.match">
+              <span v-text="suggestion.part1" />
+              <span v-text="suggestion.match" class="autocomplete-match"/>
+              <span v-text="suggestion.part2" />
+            </template>
+            <span v-else v-text="suggestion.label" />
         </div>
       </div>
     </label>
@@ -51,14 +54,24 @@ export default {
       type: String,
       default: '',
     },
+    defaultSuggestions: {
+      type: Array,
+      default () {
+        return []
+      }
+    }
   },
   data () {
     return {
       autocompletePos: {},
-      sugestions: [],
+      suggestions: [],
       open: false,
       noRequest: false
     }
+  },
+  beforeMount () {
+    this.suggestions = this.defaultSuggestions
+    console.log(JSON.stringify(this.defaultSuggestions))
   },
   mounted () {
     this.setAutocompletePos()
@@ -79,7 +92,7 @@ export default {
       this.open = false
     },
     openAutocomplete () {
-      if (this.sugestions.length) {
+      if (this.suggestions.length) {
         this.setAutocompletePos()
         this.open = true
       }
@@ -94,7 +107,7 @@ export default {
             }
           })
 
-        this.sugestions = this.mapToSugestions(response.data.results, value)
+        this.suggestions = this.mapToSuggestions(response.data.results, value)
         this.openAutocomplete()
 
       } catch (error) {
@@ -102,7 +115,7 @@ export default {
         console.error(error)
       }
     },
-    mapToSugestions (results, searchValue) {
+    mapToSuggestions (results, searchValue) {
       const sug = results.map(result => {
         const match = result.name.match(RegExp(searchValue, 'i'))
 
@@ -127,7 +140,7 @@ export default {
     value: debounce(function (newValue) {
       if(this.noRequest) {
         this.noRequest = false
-      } else {
+      } else if (newValue.length > 2) {
         this.searchFor(newValue)
       }
     }, 200)
@@ -135,7 +148,10 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+  .form-control {
+    margin: 1em 0;
+  }
   .autocomplete {
     background-color: #fff;
     box-shadow: #0008 0 4px 15px -5px;

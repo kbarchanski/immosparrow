@@ -1,31 +1,18 @@
 <template>
   <div id="app">
     <img alt="Rick and Morty logo" src="./assets/rick-and-morty.jpg" width="200">
-    <form @submit="submit">
-      <FormInput v-model="name" label="Name" placeholder="start typing" />
-    </form>
+    <search-form />
   </div>
 </template>
 
 <script>
-import FormInput from './components/FormInput.vue'
+import SearchForm from './components/SearchForm.vue'
 
 export default {
   name: 'App',
   components: {
-    FormInput,
+    SearchForm,
   },
-  data () {
-    return {
-      name: '',
-      value: '',
-    }
-  },
-  methods: {
-    submit (event) {
-      console.log(event)
-    }
-  }
 }
 </script>
 
