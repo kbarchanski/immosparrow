@@ -4,6 +4,8 @@
       {{ label }}
       <input
         @input="$emit('input', $event.target.value)"
+        @blur="onBlur"
+        @focus="openAutocomplete"
         :value="value"
         :placeholder="placeholder"
         type="text"
@@ -11,11 +13,13 @@
       >
       <div 
         ref="autocomplete"
-        class="autocomplete active"
+        class="autocomplete"
+        :class="{ open: open }"
         :style="autocompletePos"
       >
         <div 
           v-for="sugestion of sugestions"
+          @click="submit(sugestion, $event)"
           :key="sugestion.id"
           class="autocomplete-item"
         >
@@ -50,20 +54,34 @@ export default {
   },
   data () {
     return {
+      autocompletePos: {},
       sugestions: [],
-      autocompletePos: {}
+      open: false,
+      noRequest: false
     }
   },
   mounted () {
     this.setAutocompletePos()
   },
   methods: {
+    onBlur () {
+      setTimeout(()=>this.closeAutocomplete(), 250)
+    },
     setAutocompletePos () {
       const {left, top, width, height} = this.$refs.input.getBoundingClientRect()
       this.autocompletePos = {
         left: left + 'px',
         top: top + height + 'px',
         width: width + 'px',
+      }
+    },
+    closeAutocomplete () {
+      this.open = false
+    },
+    openAutocomplete () {
+      if (this.sugestions.length) {
+        this.setAutocompletePos()
+        this.open = true
       }
     },
     async searchFor (value) {
@@ -77,8 +95,10 @@ export default {
           })
 
         this.sugestions = this.mapToSugestions(response.data.results, value)
+        this.openAutocomplete()
 
       } catch (error) {
+        // TODO: handle errors; display message on 404?
         console.error(error)
       }
     },
@@ -96,12 +116,20 @@ export default {
       })
 
       return sug
-    }
+    },
+    submit (item) {
+      this.noRequest = true
+      this.$emit('input', item.value)
+      this.$emit('submit')
+    },
   },
   watch: {
     value: debounce(function (newValue) {
-      console.log(newValue)
-      this.searchFor(newValue)
+      if(this.noRequest) {
+        this.noRequest = false
+      } else {
+        this.searchFor(newValue)
+      }
     }, 200)
   },
 }
@@ -117,12 +145,16 @@ export default {
     left: 0;
     overflow: scroll;
   }
-  .autocomplete.active {
+  .autocomplete.open {
     display: block;
   }
   .autocomplete-item {
     border-bottom: 1px solid #000a;
     padding: .5em 1em;
+    cursor: pointer;
+  }
+  .autocomplete-item:hover {
+    background-color: #eee;
   }
   .autocomplete-match {
     font-weight: 600;

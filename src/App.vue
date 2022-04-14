@@ -1,7 +1,9 @@
 <template>
   <div id="app">
     <img alt="Rick and Morty logo" src="./assets/rick-and-morty.jpg" width="200">
-    <FormInput v-model="value"/>
+    <form @submit="submit">
+      <FormInput v-model="name" label="Name" placeholder="start typing" />
+    </form>
   </div>
 </template>
 
@@ -15,9 +17,15 @@ export default {
   },
   data () {
     return {
+      name: '',
       value: '',
     }
   },
+  methods: {
+    submit (event) {
+      console.log(event)
+    }
+  }
 }
 </script>
 
