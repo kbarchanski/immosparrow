@@ -3,7 +3,7 @@
     <label>
       Label
       <input
-        @input="emit('change', $event.target.value)"
+        @input="$emit('input', $event.target.value)"
         :value="$attrs.value"
         :placeholder="placeholder"
         type="text"
