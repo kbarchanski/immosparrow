@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
+    <img alt="Rick and Morty logo" src="./assets/rick-and-morty.jpg" width="200">
     <FormInput v-model="value"/>
   </div>
 </template>

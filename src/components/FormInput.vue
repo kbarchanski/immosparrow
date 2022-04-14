@@ -1,10 +1,9 @@
 <template>
   <div class="form-control">
     <label>
-      Label
+      {{ label }}
       <input
         @input="$emit('input', $event.target.value)"
-        @change="searchFor($event.target.value)"
         :value="value"
         :placeholder="placeholder"
         type="text"
@@ -31,17 +30,22 @@
 
 <script>
 import axios from 'axios'
+import { debounce } from '../services/utils'
 
 export default {
   name: 'FormInput',
   props: {
-    value: {
+    label: {
       type: String,
-      default: '',
+      default: 'Label',
     },
     placeholder: {
       type: String,
-      default: 'place',
+      default: '',
+    },
+    value: {
+      type: String,
+      default: '',
     },
   },
   data () {
@@ -90,9 +94,16 @@ export default {
           id: result.id,
         }
       })
+
       return sug
     }
-  }
+  },
+  watch: {
+    value: debounce(function (newValue) {
+      console.log(newValue)
+      this.searchFor(newValue)
+    }, 200)
+  },
 }
 </script>
 
