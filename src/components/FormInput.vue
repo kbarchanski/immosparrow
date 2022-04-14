@@ -4,7 +4,8 @@
       Label
       <input
         @input="$emit('input', $event.target.value)"
-        :value="$attrs.value"
+        @change="searchFor($event.target.value)"
+        :value="value"
         :placeholder="placeholder"
         type="text"
         ref="input"
@@ -16,7 +17,7 @@
       >
         <div 
           v-for="sugestion of sugestions"
-          :key="sugestion.value"
+          :key="sugestion.id"
           class="autocomplete-item"
         >
             <span v-text="sugestion.part1" />
@@ -29,10 +30,15 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'FormInput',
-  // inheritAttrs: false,
   props: {
+    value: {
+      type: String,
+      default: '',
+    },
     placeholder: {
       type: String,
       default: 'place',
@@ -40,21 +46,7 @@ export default {
   },
   data () {
     return {
-      sugestions: [
-        {
-          value: '0123abcdefg',
-          part1: '0123',
-          part2: 'defg',
-          match: 'abc'
-        },
-        {
-          value: 'abcdefg',
-          part1: '',
-          part2: 'defg',
-          match: 'abc'
-        },
-      ],
-
+      sugestions: [],
       autocompletePos: {}
     }
   },
@@ -69,15 +61,42 @@ export default {
         top: top + height + 'px',
         width: width + 'px',
       }
+    },
+    async searchFor (value) {
+      let response
+      try {
+        response = await axios
+          .get('https://rickandmortyapi.com/api/character',{
+            params: {
+              name: value
+            }
+          })
+
+        this.sugestions = this.mapToSugestions(response.data.results, value)
+
+      } catch (error) {
+        console.error(error)
+      }
+    },
+    mapToSugestions (results, searchValue) {
+      const sug = results.map(result => {
+        const match = result.name.match(RegExp(searchValue, 'i'))
+
+        return {
+          value: result.name,
+          part1: result.name.slice(0,match.index),
+          part2: result.name.slice(match.index + match[0]?.length),
+          match: match[0],
+          id: result.id,
+        }
+      })
+      return sug
     }
   }
 }
 </script>
 
 <style>
-  /* .form-control {
-    position: relative;
-  } */
   .autocomplete {
     background-color: #fff;
     box-shadow: #0008 0 4px 15px -5px;
@@ -85,6 +104,7 @@ export default {
     max-height: 50vh;
     position: absolute;
     left: 0;
+    overflow: scroll;
   }
   .autocomplete.active {
     display: block;

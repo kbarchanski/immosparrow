@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <img alt="Vue logo" src="./assets/logo.png">
-    <FormInput value="abc"/>
+    <FormInput v-model="value"/>
   </div>
 </template>
 
@@ -12,7 +12,12 @@ export default {
   name: 'App',
   components: {
     FormInput,
-  }
+  },
+  data () {
+    return {
+      value: '',
+    }
+  },
 }
 </script>
 
